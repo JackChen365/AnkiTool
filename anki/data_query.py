@@ -1,14 +1,28 @@
 import collections
 import os
+import platform
+import subprocess
 import time
 import csv
 
-from command_tool import open_file
-
 from anki.data.baicizhan_service import BaicizhanSercice
 from anki.data.cobuild_service import CobuildService
-from anki.data.dict_service import DictService
 from anki.data.macmillan_service import MacmillanService
+
+
+def open_file(file_path):
+    """打开文件，支持wins与osx系统打开"""
+    if not os.path.exists(file_path):
+        print("File:%s does not existed!" % file_path)
+    else:
+        sys_str = platform.system()
+        if sys_str == "Windows":
+            # subprocess.check_call(["explorer", "--", file_path.replace("/", os.path.sep)])
+            os.startfile(file_path.replace("/", os.path.sep))
+        elif sys_str == "Darwin":
+            subprocess.check_call(['open', '--', file_path])
+        else:
+            print("not support os!")
 
 
 class DataQuery(object):

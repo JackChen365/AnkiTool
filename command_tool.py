@@ -1,9 +1,7 @@
 import os
 import re
-import subprocess
-import platform
 from sys import argv
-from anki.data_query import DataQuery
+from anki.data_query import DataQuery, open_file
 from configuration import Configuration
 from anki import __version__
 
@@ -38,21 +36,6 @@ def main():
             # 检测是否为单词，如果是的话，以单词处理
             if not import_args(argv[1:]):
                 print(help_info)
-
-
-def open_file(file_path):
-    """打开文件，支持wins与osx系统打开"""
-    if not os.path.exists(file_path):
-        print("File:%s does not existed!" % file_path)
-    else:
-        sys_str = platform.system().strip()
-        if sys_str == "windows":
-            # subprocess.check_call(["explorer", "--", file_path.replace("/", os.path.sep)])
-            os.startfile(file_path.replace("/", os.path.sep))
-        elif sys_str == "darwin":
-            subprocess.check_call(['open', '--', file_path])
-        else:
-            print("not support os!")
 
 
 def import_args(param):

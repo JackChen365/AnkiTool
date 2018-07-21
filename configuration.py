@@ -9,8 +9,8 @@ class Configuration(object):
 
     def __init__(self):
         user_dir = os.path.expanduser('~')
-        sys_str = platform.system().strip()
-        if sys_str == "windows":
+        sys_str = platform.system()
+        if sys_str == "Windows":
             roaming_data = os.path.join(user_dir, "AppData/Roaming/")
             self.app_dir = os.path.join(roaming_data, "Anki_Tool/")
             if not os.path.exists(self.app_dir): os.makedirs(self.app_dir)
@@ -20,7 +20,7 @@ class Configuration(object):
                              "Dictionary for Advanced Learners.mdx"
             self.cobuild = "E:\Dicts\柯林斯COBUILD高阶英汉双解学习词典.mdx"
             self.anki_user_dir = roaming_data + "Anki2/User 1/collection.media"  # anki media根目录
-        elif sys_str == "darwin":
+        elif sys_str == "Darwin":
             # os x
             self.app_dir = os.path.join(user_dir, "Anki_Tool/")
             if not os.path.exists(self.app_dir): os.makedirs(self.app_dir)
