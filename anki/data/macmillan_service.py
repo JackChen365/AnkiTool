@@ -42,7 +42,7 @@ class MacmillanService(DictService):
 
     def process_data(self, config, data):
         """Macmillan数据处理"""
-        print("\tMacmillan词典服务开始处理数据！")
+        print("Macmillan词典服务开始处理数据！")
         # 获得所有数据
         # Macmillan词典信息
         file_name = self.name
@@ -56,13 +56,20 @@ class MacmillanService(DictService):
         print("\t开始分析整体数据")
         self.result = self._analysis_items(doc_items)
         # 4：扫描文本内资源信息
-        print("\t开始写入资源数据")
-        self.save_resource(config, dict_builder, doc_items, file_name)
-        # 5：记录扫描结果
+        print("是否写入字典内所有资源！(y/n)")
+        input_str = input("> ")
+        if "yes" == input_str.lower() or 'y' == input_str.lower():
+            print("\t开始写入资源数据")
+            self.save_resource(config, dict_builder, doc_items, file_name)
+        # 5：重置资源引用信息
+        self.reset_html_res(doc_items)
+        # 6：记录扫描结果
         print("\t开始写入正常数据")
         self.write_items(config, file_name, doc_items)
-
-        # 6:检测代码---检测资源路径信息
+        # 7:更改html_doc信息，流程设计问题，因为需要将html内的多层资源引用，改为一级，但是检索的正则，与其他信息，以发现这问题之前就写完了
+        for name, item in self.result.items():
+            item.html_doc = doc_items[name]
+        # 8:检测代码---检测资源路径信息
         invalid_res = []
         for _, item in doc_items.items():
             all_items = self.pattern.findall(item)
@@ -130,7 +137,7 @@ class MacmillanService(DictService):
         if matcher is not None:
             result_dict.setdefault("star", 0)
             result_dict["star"] += 1
-            word_item.star = matcher.group("star").ljust(3, "☆")+"&nbsp;&nbsp;&nbsp;"
+            word_item.star = matcher.group("star").ljust(3, "☆") + "&nbsp;&nbsp;&nbsp;"
         else:
             result_dict.setdefault("un_star", 0)
             result_dict["un_star"] += 1
@@ -180,8 +187,6 @@ class MacmillanService(DictService):
         # 如果美式音标为空，则美式与英文一致
         if word_item.us_phonetic is None:
             word_item.us_phonetic = word_item.uk_phonetic
-
-        # 记录文档
         word_item.html_doc = out
         return word_item
 

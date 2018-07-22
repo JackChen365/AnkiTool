@@ -21,7 +21,8 @@ class Baicizhan(WebService):
         url = u"http://mall.baicizhan.com/ws/search?w={word}".format(word=parse.quote(query_word))
         response_item = ResponseItem(query_word)
         try:
-            cache_file = os.path.join(cache_path, query_word+".json")
+            # 加_为避免关键字冲突
+            cache_file = os.path.join(cache_path, "_" + query_word+".json")
             if not os.path.exists(cache_file):
                 # 网络请求获取数据
                 html = urllib.request.urlopen(url, timeout=5).read().decode('utf-8')
@@ -38,8 +39,7 @@ class Baicizhan(WebService):
                     out += line.strip()
                 file.close()
                 response_item.result = out
-        except IOError as e:
-            print(e)
+        except IOError:
             print("\t单词查询失败:%s" % query_word)
             if retry:
                 return self.request(query_word, cache_path, False)

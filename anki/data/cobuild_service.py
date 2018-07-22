@@ -31,7 +31,9 @@ class CobuildService(DictService):
         # 3：扫描文本内资源信息
         print("\t开始写入资源数据")
         self.save_resource(config, dict_builder, doc_items, file_name)
-        # 4：记录扫描结果
+        # 4：重置资源引用信息
+        self.reset_html_res(doc_items)
+        # 5：记录扫描结果
         self.write_items(config, file_name, doc_items)
         # 返回doc信息
         self.result = doc_items

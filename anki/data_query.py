@@ -74,7 +74,8 @@ class DataQuery(object):
         if "yes" == s.lower().strip() or 'y' == s.lower().strip():
             if os.path.exists(config.anki_user_dir):
                 for name, item in self.service_items.items():
-                    item.import_resources(config)
+                    if item.is_alive(config):
+                        item.import_resources(config)
                 print("Import completed!")
             else:
                 print("Import user folder failure! %s does not existed!" % config.anki_user_dir)

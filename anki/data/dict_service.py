@@ -37,18 +37,18 @@ class DictService(DataService):
 
     def write_items(self, config, file_name, items):
         """写入操作成功数据"""
-        file_name = config.app_dir + file_name
-        if not os.path.exists(file_name): os.makedirs(file_name)
+        file_path = config.app_dir + file_name
+        if not os.path.exists(file_path): os.makedirs(file_path)
         # 写入文件
         future_items = []
         for (key, item) in items.items():
-            if not os.path.exists(file_name + "/" + key):
-                future_items.append(self.executor.submit(self._write_file, file_name + "/" + key, key, item))
-        # 检索任务
+            if not os.path.exists(file_path + "/" + "_" + key):
+                # 加_线的原因是区别关键字
+                future_items.append(self.executor.submit(self._write_file, file_path + "/" + "_" + key, key, item))
         total = 0
         for future in futures.as_completed(future_items):
-            (word, result) = future.result()
-            if result:
+            word = future.result()
+            if word:
                 total += 1
             else:
                 print("\t单词:%s 文本保存失败！" % word)
@@ -57,14 +57,26 @@ class DictService(DataService):
 
     @staticmethod
     def _write_file(file_path, word, text):
-        try:
-            fh = open(file_path, 'w', encoding='utf-8')
-            # 写入文本集
-            fh.write(text)
-            result = True
-        finally:
-            if fh is not None: fh.close()
-        return word, result
+        with open(file_path, 'w', encoding='utf-8') as f:
+            f.write(text)
+        return word
+
+    @staticmethod
+    def reset_html_res(items):
+        """重置html内资源信息"""
+        for (key, item) in items.items():
+            pattern = re.compile(r"=\"(sound://)?([^\"\.]+\.(?:wav|gif|png|jpg))\"")
+            matcher = pattern.findall(item)
+            for host, res in matcher:
+                # 重置资源索引路径,将多级的img/xx.jpg,置为1级的
+                base_name = os.path.basename(res)
+                if base_name != res:
+                    item = item.replace(host + res, host + base_name)
+            # 替换音频信息，从<a href=xx> 替换为[sound://xx]
+            for v in re.compile("(?P<path><a href=\"sound://(?P<res>[^\\.]+\\.wav)\">)").findall(item):
+                item = item.replace(v[0], "[sound:%s]" % v[1])
+            # 重置信息
+            items[key] = item
 
     def save_resource(self, config, dict_builder, items, name):
         """保存字典内资源文件"""
@@ -76,20 +88,11 @@ class DictService(DataService):
             pattern = re.compile(r"=\"(sound://)?([^\"\.]+\.(?:wav|gif|png|jpg))\"")
             matcher = pattern.findall(item)
             for host, res in matcher:
-                # 重置资源索引路径
-                base_name = os.path.basename(res)
-                if base_name != res:
-                    item = item.replace(host + res, host + base_name)
                 file_path = os.path.join(path, os.path.basename(res))
                 # 文件不存在时才进行操作
                 if not os.path.exists(file_path):
                     # 添加查询任务
                     future_items.append(self.executor.submit(self._query_file, dict_builder, file_path, res))
-            # 替换音频信息，从<a href=xx> 替换为[sound://xx]
-            for v in re.compile("(?P<path><a href=\"sound://(?P<res>[^\\.]+\\.wav)\">)").findall(item):
-                item = item.replace(v[0], "[sound:%s]" % v[1])
-            # 重置信息
-            items[key] = item
         # 轮询所有任务,任务添加后，开始轮询
         for future in futures.as_completed(future_items):
             (res, result) = future.result()
