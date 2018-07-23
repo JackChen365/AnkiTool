@@ -5,7 +5,6 @@ from anki.data_query import DataQuery, open_file
 from configuration import Configuration
 from anki import __version__
 
-
 def main():
     help_info = "-w                            - default input word mode,word from command.\n" \
                 "-f                            - word from disk file.\n" \
@@ -78,9 +77,9 @@ def import_file(param, from_last=False):
         for path in param:
             if os.path.exists(path):
                 try:
-                    file = open(path, "r")
-                    items.extend(list(map(lambda i: i.strip(), file.readlines())))
-                    file.close()
+                    # 将文件转换为utf-8-sig格式，避免utf8-bom，导致的读取问题
+                    with open(path, "r", encoding='utf-8-sig') as file:
+                        items.extend(list(map(lambda i: i.strip(), file.readlines())))
                 except Exception as e:
                     print("\t文件:%s读取异常！" % path)
                     print(e)

@@ -28,12 +28,9 @@ class DictService(DataService):
     def write_invalid_items(config, file_name, items):
         """写入操作无效数据"""
         # 写入文件
-        fh = open(config.app_dir + file_name + ".txt", 'w', encoding='utf-8')
-        try:
+        with open(config.app_dir + file_name + ".txt", 'w', encoding='utf-8') as f:
             for i in items:
-                fh.write(i + "\n")
-        finally:
-            fh.close()
+                f.write(i + "\n")
 
     def write_items(self, config, file_name, items):
         """写入操作成功数据"""
@@ -115,7 +112,6 @@ class DictService(DataService):
             print("\t资源:%s查询失败!" % res)
         else:
             # 因为部分资源为img/xx.jpg 所有需要取具体名称
-            f = open(file_path, 'wb')
-            f.write(bytes_list[0])
-            f.close()
+            with open(file_path, 'wb') as f:
+                f.write(bytes_list[0])
         return res, result

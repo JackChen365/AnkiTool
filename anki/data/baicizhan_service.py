@@ -119,6 +119,7 @@ class BaicizhanSercice(DataService):
             tv = dict_item.get("tv")
             items = ["" if img is None else ("<img src=\"%s\"/>" % os.path.basename(img)),
                      "" if df is None else ("<img src=\"%s\"/>" % os.path.basename(df)),
+                     # 不直接写入tv,避免anki加入后视频自动播放功能
                      "" if tv is None else ("[sound:%s]" % os.path.basename(tv)),
                      dict_item.get("mean_cn", " ")]
             return items
